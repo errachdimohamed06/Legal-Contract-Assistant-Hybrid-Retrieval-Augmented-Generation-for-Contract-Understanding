@@ -1,0 +1,14 @@
+llm:
+  provider: "ollama"
+  model_name: "qwen2.5:7b"
+  temperature: 0.1
+  base_url: "http://localhost:11434"
+
+embedding:
+  provider: "sentence_transformers"
+  model_name: "all-MiniLM-L6-v2"
+  device: "cpu"
+  normalize_embeddings: true
+
+vector_db:
+  collection_name: "cuad_contracts"

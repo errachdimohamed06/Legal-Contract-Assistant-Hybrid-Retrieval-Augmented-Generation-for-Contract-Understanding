@@ -1,0 +1,48 @@
+# === Python ===
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+dist/
+*.egg-info/
+.eggs/
+
+# === Environnements virtuels ===
+venv/
+.venv/
+env/
+ENV/
+
+# === IDE ===
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+
+# === Variables d'environnement ===
+.env
+.env.*
+
+# === Base de données vectorielle (162 MB — trop lourd pour GitHub) ===
+outputs/chroma_db/
+outputs/logs/
+
+# === Dataset CUAD (510 contrats, à télécharger depuis Atticus Project) ===
+data/raw/full_contract_txt/
+data/raw/*.csv
+data/raw/*.json
+
+# === Système d'exploitation ===
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# === Modèles téléchargés ===
+*.safetensors
+*.bin
+*.pt
+*.pth

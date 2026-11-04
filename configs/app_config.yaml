@@ -1,0 +1,8 @@
+paths:
+  data_dir: "data/raw/full_contract_txt"
+  chroma_persist_dir: "outputs/chroma_db"
+  log_dir: "outputs/logs"
+
+app:
+  name: "Legal RAG Assistant"
+  version: "1.0.0"

@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Legal Contract Assistant</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif;
+            background: #f5f7fa;
+            color: #333;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+        }
+        .container {
+            width: 100%;
+            max-width: 900px;
+            background: #fff;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+            overflow: hidden;
+        }
+        header {
+            background: #1e3a8a;
+            color: #fff;
+            padding: 20px;
+            text-align: center;
+        }
+        header h1 { font-size: 1.5rem; font-weight: 600; }
+        header p { font-size: 0.9rem; opacity: 0.85; margin-top: 5px; }
+        .upload-section {
+            padding: 25px;
+            border-bottom: 1px solid #eee;
+            text-align: center;
+        }
+        .upload-section h3 { margin-bottom: 15px; font-size: 1.1rem; }
+        input[type="file"] {
+            display: none;
+        }
+        .file-label {
+            display: inline-block;
+            padding: 12px 24px;
+            background: #e0e7ff;
+            color: #1e3a8a;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: background 0.2s;
+        }
+        .file-label:hover { background: #c7d2fe; }
+        .upload-btn {
+            display: inline-block;
+            padding: 12px 24px;
+            background: #1e3a8a;
+            color: #fff;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 500;
+            margin-left: 10px;
+            transition: background 0.2s;
+        }
+        .upload-btn:hover { background: #1e40af; }
+        .upload-btn:disabled { background: #94a3b8; cursor: not-allowed; }
+        .status {
+            margin-top: 15px;
+            font-size: 0.9rem;
+            color: #64748b;
+        }
+        .status.success { color: #16a34a; font-weight: 500; }
+        .status.error { color: #dc2626; font-weight: 500; }
+        .chat-section {
+            height: 400px;
+            overflow-y: auto;
+            padding: 20px;
+            background: #fafbfc;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+        .message {
+            max-width: 80%;
+            padding: 12px 16px;
+            border-radius: 12px;
+            font-size: 0.95rem;
+            line-height: 1.5;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+        .message.user {
+            align-self: flex-end;
+            background: #1e3a8a;
+            color: #fff;
+            border-bottom-right-radius: 3px;
+        }
+        .message.assistant {
+            align-self: flex-start;
+            background: #fff;
+            color: #1e293b;
+            border: 1px solid #e2e8f0;
+            border-bottom-left-radius: 3px;
+        }
+        .message.placeholder {
+            align-self: center;
+            color: #94a3b8;
+            font-style: italic;
+            background: transparent;
+        }
+        .input-section {
+            padding: 15px;
+            border-top: 1px solid #eee;
+            display: flex;
+            gap: 10px;
+            background: #fff;
+        }
+        .input-section input[type="text"] {
+            flex: 1;
+            padding: 12px 16px;
+            border: 1px solid #cbd5e1;
+            border-radius: 8px;
+            font-size: 0.95rem;
+            outline: none;
+            transition: border 0.2s;
+        }
+        .input-section input[type="text"]:focus { border-color: #1e3a8a; }
+        .input-section button {
+            padding: 12px 24px;
+            background: #1e3a8a;
+            color: #fff;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 500;
+        }
+        .input-section button:hover { background: #1e40af; }
+        .input-section button:disabled { background: #94a3b8; cursor: not-allowed; }
+        .loader {
+            display: inline-block;
+            width: 14px;
+            height: 14px;
+            border: 2px solid #fff;
+            border-top-color: transparent;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+            vertical-align: middle;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>📄 Legal Contract Assistant</h1>
+            <p>Upload your contract and ask any question</p>
+        </header>
+
+        <div class="upload-section">
+            <h3>Step 1: Upload your Contract (PDF)</h3>
+            <input type="file" id="pdfFile" accept=".pdf">
+            <label for="pdfFile" class="file-label" id="fileLabel">Choose PDF</label>
+            <button class="upload-btn" id="uploadBtn">Upload</button>
+            <div class="status" id="status">No file uploaded yet.</div>
+        </div>
+
+        <div class="chat-section" id="chatBox">
+            <div class="message placeholder">Upload a contract to start asking questions.</div>
+        </div>
+
+        <div class="input-section">
+            <input type="text" id="questionInput" placeholder="Ask a question about the contract..." disabled>
+            <button id="sendBtn" disabled>Send</button>
+        </div>
+    </div>
+
+    <script>
+        const sessionId = crypto.randomUUID();
+        const fileInput = document.getElementById('pdfFile');
+        const fileLabel = document.getElementById('fileLabel');
+        const uploadBtn = document.getElementById('uploadBtn');
+        const status = document.getElementById('status');
+        const chatBox = document.getElementById('chatBox');
+        const questionInput = document.getElementById('questionInput');
+        const sendBtn = document.getElementById('sendBtn');
+
+        fileInput.addEventListener('change', () => {
+            if (fileInput.files.length > 0) {
+                fileLabel.textContent = fileInput.files[0].name;
+            }
+        });
+
+        uploadBtn.addEventListener('click', async () => {
+            const file = fileInput.files[0];
+            if (!file) {
+                status.textContent = 'Please choose a PDF file first.';
+                status.className = 'status error';
+                return;
+            }
+            status.textContent = 'Uploading and analyzing... (this may take 30-60 seconds)';
+            status.className = 'status';
+            uploadBtn.disabled = true;
+
+            const formData = new FormData();
+            formData.append('file', file);
+            formData.append('session_id', sessionId);
+
+            try {
+                const res = await fetch('/upload', { method: 'POST', body: formData });
+                const data = await res.json();
+                if (res.ok) {
+                    status.textContent = '✅ ' + data.message;
+                    status.className = 'status success';
+                    chatBox.innerHTML = '<div class="message assistant">Contract ready. Ask your question below.</div>';
+                    questionInput.disabled = false;
+                    sendBtn.disabled = false;
+                    questionInput.focus();
+                } else {
+                    status.textContent = '❌ ' + data.detail;
+                    status.className = 'status error';
+                    uploadBtn.disabled = false;
+                }
+            } catch (err) {
+                status.textContent = '❌ Network error: ' + err.message;
+                status.className = 'status error';
+                uploadBtn.disabled = false;
+            }
+        });
+
+        async function sendQuestion() {
+            const question = questionInput.value.trim();
+            if (!question) return;
+
+            chatBox.innerHTML += '<div class="message user">' + escapeHtml(question) + '</div>';
+            chatBox.scrollTop = chatBox.scrollHeight;
+            questionInput.value = '';
+            questionInput.disabled = true;
+            sendBtn.disabled = true;
+
+            const thinkingId = 'think-' + Date.now();
+            chatBox.innerHTML += '<div class="message assistant" id="' + thinkingId + '"><span class="loader" style="border-color:#1e3a8a;border-top-color:transparent;"></span> Thinking...</div>';
+            chatBox.scrollTop = chatBox.scrollHeight;
+
+            try {
+                const res = await fetch('/ask', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ question, session_id: sessionId })
+                });
+                const data = await res.json();
+                document.getElementById(thinkingId).remove();
+                if (res.ok) {
+                    chatBox.innerHTML += '<div class="message assistant">' + escapeHtml(data.answer) + '</div>';
+                } else {
+                    chatBox.innerHTML += '<div class="message assistant">❌ Error: ' + escapeHtml(data.detail) + '</div>';
+                }
+            } catch (err) {
+                document.getElementById(thinkingId).remove();
+                chatBox.innerHTML += '<div class="message assistant">❌ Network error.</div>';
+            }
+            chatBox.scrollTop = chatBox.scrollHeight;
+            questionInput.disabled = false;
+            sendBtn.disabled = false;
+            questionInput.focus();
+        }
+
+        sendBtn.addEventListener('click', sendQuestion);
+        questionInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') sendQuestion();
+        });
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+    </script>
+</body>
+</html>     

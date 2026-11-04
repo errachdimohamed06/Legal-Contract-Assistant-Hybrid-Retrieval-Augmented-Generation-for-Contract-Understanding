@@ -1,0 +1,16 @@
+chunking:
+  hard_max_characters: 1500
+  soft_chunk_size: 1000
+  overlap: 200
+
+  patterns:
+    articles: "(ARTICLE\\s+[IVXLCDM]+|ARTICLE\\s+\\d+|Chapter\\s+\\d+)"
+    sections: "(Section\\s+\\d+\\.\\d+|\\d+\\.\\d+\\.\\s+|\\d+\\.\\s+[A-Z][a-z])"
+    sub_sections: "(\\d+\\.\\d+\\.\\d+\\s+)"
+    annexes: "(Annex\\s+\\d+|Exhibit\\s+[A-Z]|Schedule\\s+\\d+\\.\\d+[\\(a-z\\)]*)"
+    recitals: "(RECITALS|WHEREAS)"
+    letters: "(\\([a-z]+\\)|\\([i]+\\))"
+    
+  cleaning:
+    remove_page_numbers: true
+    remove_source_headers: true

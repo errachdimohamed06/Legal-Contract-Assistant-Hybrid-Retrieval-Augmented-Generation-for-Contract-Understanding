@@ -103,17 +103,12 @@ The **hybrid routing** is the core originality of the pipeline: it explicitly se
 
 #### Step 1 — Text cleaning
 
-Raw contracts contain **parasitic lines** injected by the EDGAR exporter (page numbers alone on a line, `Source: ...` footers). These lines are removed by a dedicated function:
+Raw contracts contain **parasitic lines** injected by the EDGAR exporter: lines that contain only a page number, and footer lines that start with `Source:`. These lines are removed by a dedicated function `clean_document()` before chunking, according to the following rule:
 
-$$
-\text{keep}(L) =
-\begin{cases}
-\text{True} & \text{if } L \not\sim \texttt{\textasciicircum\textbackslash s*}\texttt{\textbackslash d+}\texttt{\textbackslash s*\$} \ \text{and } L \not\preceq \text{"Source:"} \\
-\text{False} & \text{otherwise}
-\end{cases}
-$$
+- **Keep** a line `L` if and only if `L` is **not** composed only of digits **and** `L` does **not** start with `"Source:"`.
+- **Discard** the line otherwise.
 
-This step prevents page numbers and source lines from polluting clause chunks.
+This step prevents page numbers and source footers from polluting the clause chunks.
 
 #### Step 2 — Hierarchical regex-based chunking
 
@@ -169,7 +164,7 @@ The prepared contract — `{chunks, headers, embeddings}` — is stored in a **P
 For each question, the router decides **which source to query**. The current implementation uses a **keyword-based classifier** with a curated list of factual markers:
 
 $$
-\text{is\_factual}(q) = \exists\, k \in \mathcal{K}_{\text{fact}} \ \text{such that} \ k \subseteq \text{lower}(q)
+\mathrm{is\_factual}(q) \;=\; \exists\, k \in \mathcal{K}_{\text{fact}} \; : \; k \subseteq \mathrm{lower}(q)
 $$
 
 where $\mathcal{K}_{\text{fact}}$ contains terms such as `date`, `expiration`, `governing law`, `jurisdiction`, `payment`, `amount`, `party`, `notice`, `signature`, `arbitration`.
@@ -250,4 +245,3 @@ _Figure 3 — Ground-truth verification. The three factual answers returned by t
 | Explanatory answer quality (qualitative)            | ✓ pedagogically correct                     |
 
 ---
-
